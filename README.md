@@ -117,6 +117,19 @@ pnpm release
 
 项目根目录的 `.env` 已被 `.gitignore` 忽略。脚本会在读取发布配置前加载它，并只通过临时 npm 配置把 Token 传给检查与发布子进程，结束后立即删除临时文件。不要把真实 Token 写进 `.env.example`、`.npmrc`、`release.config.cjs` 或提交到 Git。若 `.env` 中未设置 `NPM_TOKEN`，npm 会继续使用官方网页认证流程。
 
+### GitHub 认证与 CI
+
+GitHub Actions 中的 `CI` 只执行安装、校验、测试和打包，不负责发布 npm。推送到 `main` 或创建 Pull Request 会自动触发 CI，GitHub 会为 Actions 自动提供所需权限，不需要在 `.env` 中配置 GitHub Token。
+
+交互发布流程最后的 GitHub Release 只是 Git 标签的可视化版本页面，不影响 npm 包的安装和更新。推荐在本机安装 GitHub CLI 后登录：
+
+```bash
+brew install gh
+gh auth login
+```
+
+`gh` 会把凭据保存在系统安全凭据存储中，不需要写入项目 `.env`。如果本机没有安装或登录 `gh`，脚本会保留已经推送的 Git 标签并提示你稍后在 GitHub 网页手动创建 Release，不会因此撤销已发布的 npm 包。
+
 ## 当前 skills
 
 - `learning-coach`：整合学习计划、辅导、练习与解析、错题诊断、动态复盘，以及用户明确要求时的项目留痕。
