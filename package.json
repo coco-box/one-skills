@@ -1,0 +1,51 @@
+{
+  "name": "@coco-box/one-skills",
+  "version": "0.1.0",
+  "description": "跨 Codex、Cursor 和 Claude Code 安装与维护个人 Agent Skills",
+  "type": "module",
+  "bin": {
+    "one-skills": "./bin/one-skills.js",
+    "osk": "./bin/one-skills.js"
+  },
+  "files": [
+    "bin",
+    "skills",
+    "skills.json",
+    "skills.schema.json",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "check": "node scripts/validate-skills.js",
+    "test": "node --test",
+    "prepack": "pnpm check && pnpm test",
+    "release": "node scripts/release.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "volta": {
+    "node": "22.17.0",
+    "pnpm": "10.13.1"
+  },
+  "keywords": [
+    "agent-skills",
+    "codex",
+    "cursor",
+    "claude-code",
+    "ai-agent"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coco-box/one-skills.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "devDependencies": {
+    "ansis": "^4.3.1",
+    "prompts": "^2.4.2"
+  }
+}

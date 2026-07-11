@@ -1,0 +1,8 @@
+.github/
+.changeset/
+test/
+scripts/
+learning-journal/
+learning-tutoring/
+**/__pycache__/
+**/*.pyc
