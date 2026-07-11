@@ -1,6 +1,6 @@
 {
   "name": "@coco-box/one-skills",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "跨 Codex、Cursor 和 Claude Code 安装与维护个人 Agent Skills",
   "type": "module",
   "bin": {
