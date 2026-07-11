@@ -3,3 +3,6 @@ node_modules/
 .DS_Store
 coverage/
 learning/
+.env
+.env.*
+!.env.example

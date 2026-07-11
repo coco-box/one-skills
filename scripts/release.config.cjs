@@ -7,6 +7,7 @@ const releaseConfig = {
   branch: process.env.ONE_SKILLS_RELEASE_BRANCH || 'main',
   tagPrefix: 'v',
   createGitHubRelease: true,
+  npmToken: process.env.NPM_TOKEN || process.env.NODE_AUTH_TOKEN || '',
 }
 
 module.exports = {

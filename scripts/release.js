@@ -1,9 +1,14 @@
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
 import process from 'node:process'
 import ansis from 'ansis'
 import prompts from 'prompts'
+
+const envPath = new URL('../.env', import.meta.url)
+if (existsSync(envPath)) process.loadEnvFile(envPath)
 
 const require = createRequire(import.meta.url)
 const { releaseConfig } = require('./release.config.cjs')
@@ -20,12 +25,27 @@ const packagePath = new URL('../package.json', import.meta.url)
 const changelogPath = new URL('../CHANGELOG.md', import.meta.url)
 
 function run(command, args, options = {}) {
-  return execFileSync(command, args, {
+  const output = execFileSync(command, args, {
     cwd: new URL('..', import.meta.url),
     encoding: 'utf8',
     stdio: options.capture ? 'pipe' : 'inherit',
     ...options,
-  })?.trim()
+  })
+  return options.trim === false ? output : output?.trim()
+}
+
+function withNpmAuth(callback) {
+  if (!releaseConfig.npmToken) return callback(process.env)
+
+  const directory = mkdtempSync(path.join(tmpdir(), 'one-skills-npm-'))
+  const userConfig = path.join(directory, '.npmrc')
+  const registryHost = new URL(releaseConfig.registry).host
+  writeFileSync(userConfig, `registry=${releaseConfig.registry}\n//${registryHost}/:_authToken=${releaseConfig.npmToken}\n`)
+  try {
+    return callback({ ...process.env, NPM_CONFIG_USERCONFIG: userConfig })
+  } finally {
+    rmSync(directory, { recursive: true, force: true })
+  }
 }
 
 function readPackage() {
@@ -38,7 +58,7 @@ function writePackage(packageInfo) {
 
 function cancel() {
   console.log(ansis.yellowBright('已取消发布'))
-  process.exit(1)
+  process.exit(0)
 }
 
 async function askSteps(packageName) {
@@ -121,13 +141,27 @@ function ensureCleanRepository() {
   if (status) throw new Error('工作区存在未提交改动，请先提交或暂存后再发布')
 }
 
+function changedFiles() {
+  const output = run('git', ['status', '--porcelain=v1', '-z'], { capture: true, trim: false })
+  if (!output) return []
+  const entries = output.split('\0').filter(Boolean)
+  const files = []
+  for (let index = 0; index < entries.length; index += 1) {
+    const entry = entries[index]
+    const status = entry.slice(0, 2)
+    files.push(entry.slice(3))
+    if (status.includes('R') || status.includes('C')) index += 1
+  }
+  return files
+}
+
 function preflight(packageInfo) {
   console.log(ansis.cyan('\n开始发布前检查'))
   ensureCleanRepository()
   const branch = run('git', ['branch', '--show-current'], { capture: true })
   if (branch !== releaseConfig.branch) throw new Error(`请在 ${releaseConfig.branch} 分支发布，当前为 ${branch || 'detached HEAD'}`)
   run('git', ['remote', 'get-url', 'origin'], { capture: true })
-  run('npm', ['whoami', '--registry', releaseConfig.registry], { capture: true })
+  withNpmAuth((env) => run('npm', ['whoami', '--registry', releaseConfig.registry], { capture: true, env }))
   run('pnpm', ['check'])
   run('pnpm', ['test'])
   run('pnpm', ['pack'])
@@ -136,24 +170,35 @@ function preflight(packageInfo) {
 
 function publishToNpm(packageInfo) {
   console.log(ansis.cyan(`\n发布 ${packageInfo.name}@${packageInfo.version} 到 ${releaseConfig.registry}`))
-  run('pnpm', [
-    'publish',
-    '--registry', releaseConfig.registry,
-    '--access', releaseConfig.access,
-    '--tag', releaseConfig.distTag,
-    '--no-git-checks',
-  ])
+  withNpmAuth((env) => run('pnpm', [
+      'publish',
+      '--registry', releaseConfig.registry,
+      '--access', releaseConfig.access,
+      '--tag', releaseConfig.distTag,
+      '--no-git-checks',
+    ], { env }))
   console.log(ansis.green('npm 发布完成'))
 }
 
-function createGitRelease(packageInfo, changelog) {
+async function createGitRelease(packageInfo, changelog) {
   const tag = `${releaseConfig.tagPrefix}${packageInfo.version}`
   const allowed = new Set(['package.json', 'pnpm-lock.yaml', 'CHANGELOG.md'])
-  const changed = run('git', ['status', '--porcelain'], { capture: true })
-    .split('\n').filter(Boolean).map((line) => line.slice(3))
+  const changed = changedFiles()
   const unexpected = changed.filter((file) => !allowed.has(file))
   if (unexpected.length) throw new Error(`发现发布流程之外的改动：${unexpected.join(', ')}`)
   if (changed.length === 0) throw new Error('没有可提交的版本或 CHANGELOG 改动，请选择版本更新或变更日志步骤')
+
+  console.log(`\n即将提交以下发布文件：\n${changed.map((file) => `  - ${file}`).join('\n')}`)
+  const { confirmed } = await prompts({
+    type: 'confirm',
+    name: 'confirmed',
+    message: `确认创建提交和标签 ${tag} 并推送？`,
+    initial: true,
+  }, { onCancel: cancel })
+  if (!confirmed) {
+    console.log(ansis.yellowBright('已跳过 Git 提交、标签和推送'))
+    return
+  }
 
   run('git', ['add', ...changed])
   run('git', ['commit', '-m', `chore: release ${packageInfo.name}@${packageInfo.version}`])
@@ -179,17 +224,23 @@ async function confirmRelease(packageInfo, steps) {
     type: 'confirm',
     name: 'confirmed',
     message: '确认继续？',
-    initial: false,
+    initial: true,
   }, { onCancel: cancel })
-  if (!confirmed) cancel()
+  return confirmed
 }
 
 async function main() {
   let packageInfo = readPackage()
   const steps = await askSteps(packageInfo.name)
-  if (steps.size === 0) cancel()
+  if (steps.size === 0) {
+    console.log(ansis.yellowBright('未选择任何发布步骤，已退出'))
+    return
+  }
 
-  await confirmRelease(packageInfo, steps)
+  if (!await confirmRelease(packageInfo, steps)) {
+    console.log(ansis.yellowBright('已取消发布'))
+    return
+  }
   if (steps.has(STEPS.CHECK)) preflight(packageInfo)
   if (steps.has(STEPS.VERSION)) {
     await updateVersion(packageInfo)
@@ -204,13 +255,16 @@ async function main() {
       type: 'confirm',
       name: 'confirmed',
       message: ansis.redBright(`即将向 npm 发布 ${packageInfo.name}@${packageInfo.version}，确认发布？`),
-      initial: false,
+      initial: true,
     }, { onCancel: cancel })
-    if (!confirmed) cancel()
+    if (!confirmed) {
+      console.log(ansis.yellowBright('已取消 npm 发布，后续步骤未执行'))
+      return
+    }
     publishToNpm(packageInfo)
   }
 
-  if (steps.has(STEPS.GIT_RELEASE)) createGitRelease(packageInfo, changelog)
+  if (steps.has(STEPS.GIT_RELEASE)) await createGitRelease(packageInfo, changelog)
   console.log(ansis.greenBright(`\n完成：${packageInfo.name}@${packageInfo.version}`))
 }
 

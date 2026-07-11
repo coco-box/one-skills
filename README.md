@@ -107,6 +107,16 @@ pnpm release
 
 配置位于 `scripts/release.config.cjs`。可以通过 `ONE_SKILLS_NPM_REGISTRY`、`ONE_SKILLS_NPM_TAG` 和 `ONE_SKILLS_RELEASE_BRANCH` 临时覆盖配置，仓库中不保存 npm Token。
 
+如果不希望每次发布都打开 npm 网页确认，请在 npm 网站创建仅授权 `@coco-box/one-skills`、具备读写权限并开启 **Bypass 2FA** 的 Granular Access Token。复制示例配置并填入 Token：
+
+```bash
+cp .env.example .env
+# 编辑 .env，将 NPM_TOKEN 改成真实 Token
+pnpm release
+```
+
+项目根目录的 `.env` 已被 `.gitignore` 忽略。脚本会在读取发布配置前加载它，并只通过临时 npm 配置把 Token 传给检查与发布子进程，结束后立即删除临时文件。不要把真实 Token 写进 `.env.example`、`.npmrc`、`release.config.cjs` 或提交到 Git。若 `.env` 中未设置 `NPM_TOKEN`，npm 会继续使用官方网页认证流程。
+
 ## 当前 skills
 
 - `learning-coach`：整合学习计划、辅导、练习与解析、错题诊断、动态复盘，以及用户明确要求时的项目留痕。
