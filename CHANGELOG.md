@@ -1,5 +1,9 @@
 # 更新日志
 
+## 0.1.4 - 2026-07-16
+
+- feat: 更新 learning-coach (e50c9a9)
+
 ## 0.1.3 - 2026-07-16
 
 - feat: 添加生成 design.md 的 skill 和更新 readme.md (21b0cdd)
