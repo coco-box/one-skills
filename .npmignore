@@ -6,5 +6,7 @@ learning-journal/
 learning-tutoring/
 **/__pycache__/
 **/*.pyc
+skills/**/__pycache__/
+skills/**/*.pyc
 .env
 .env.*

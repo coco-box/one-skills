@@ -10,6 +10,8 @@
   "files": [
     "bin",
     "skills",
+    "!skills/**/__pycache__",
+    "!skills/**/*.pyc",
     "skills.json",
     "skills.schema.json",
     "LICENSE",

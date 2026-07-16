@@ -5,6 +5,11 @@
       "name": "learning-coach",
       "path": "skills/learning-coach",
       "description": "个性化学习规划、辅导、练习、错题诊断、复盘与可选项目留痕"
+    },
+    {
+      "name": "generate-design-md",
+      "path": "skills/generate-design-md",
+      "description": "从前端项目、网站或截图提取视觉语言并生成 DESIGN.md 与明暗预览"
     }
   ]
 }

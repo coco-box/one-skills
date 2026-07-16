@@ -2,39 +2,124 @@
 
 个人维护、可分享的 Agent Skills 集合。一个 npm CLI 将同一份 skill 安装到 Codex、Cursor 和 Claude Code，支持项目级与用户级安装、按需选择、更新、卸载和预览。
 
-## 快速开始
+## 安装
 
-发布到 npm 后，无需全局安装：
+无需全局安装 CLI，推荐始终使用 npm 上的最新版本：
 
 ```bash
-# 查看可用 skill
-pnpm dlx @coco-box/one-skills list
-
-# 给当前项目的 Codex 安装一个 skill
-pnpm dlx @coco-box/one-skills install learning-coach --agent codex
-
-# 给三个客户端安装全部 skill
-pnpm dlx @coco-box/one-skills install --agent all
-
-# 安装到当前用户；可用 codex、cursor、claude 或逗号分隔组合
-pnpm dlx @coco-box/one-skills install --agent codex,claude --global
-
-# 更新或卸载
-pnpm dlx @coco-box/one-skills update --agent all
-pnpm dlx @coco-box/one-skills uninstall learning-coach --agent cursor
+# 查看当前提供的 skill
+pnpm dlx @coco-box/one-skills@latest list
 ```
 
-使用 npm/npx 时，把 `pnpm dlx` 换成 `npx` 即可。
+### 安装单个 skill
+
+```bash
+# 学习规划、辅导、练习、复盘与留痕
+pnpm dlx @coco-box/one-skills@latest install learning-coach --agent codex
+
+# 从项目、网站或截图生成 DESIGN.md 与明暗预览
+pnpm dlx @coco-box/one-skills@latest install generate-design-md --agent codex
+```
+
+将 `codex` 换成 `cursor` 或 `claude`，即可安装到对应客户端的当前项目目录。
+
+### 安装多个或全部 skill
+
+```bash
+# 一次安装指定的两个 skill
+pnpm dlx @coco-box/one-skills@latest install \
+  learning-coach generate-design-md \
+  --agent codex
+
+# 给当前项目的三个客户端安装全部 skill
+pnpm dlx @coco-box/one-skills@latest install --agent all
+
+# 安装到当前用户，供所有项目使用
+pnpm dlx @coco-box/one-skills@latest install --agent codex,cursor,claude --global
+```
+
+使用 npm 时，可以把 `pnpm dlx` 换成 `npx`：
+
+```bash
+npx @coco-box/one-skills@latest list
+```
 
 安装目标：
 
-| 客户端 | 项目级 | 用户级 |
-|---|---|---|
-| Codex | `.codex/skills/` | `~/.codex/skills/` |
-| Cursor | `.cursor/skills/` | `~/.cursor/skills/` |
+| 客户端      | 项目级            | 用户级              |
+| ----------- | ----------------- | ------------------- |
+| Codex       | `.codex/skills/`  | `~/.codex/skills/`  |
+| Cursor      | `.cursor/skills/` | `~/.cursor/skills/` |
 | Claude Code | `.claude/skills/` | `~/.claude/skills/` |
 
 项目级目录适合随项目提交并与团队共享；用户级目录适合跨项目使用。安装器复制完整 skill 包，并写入 `.one-skills.json` 记录来源版本。
+
+## 使用
+
+安装后不需要执行额外命令。Codex、Cursor 或 Claude Code 会读取对应目录中的 `SKILL.md`，并在请求匹配时自动使用 skill；也可以在提示中直接点名 skill。
+
+### `learning-coach`
+
+适合学习计划、备考安排、练习与解析、错题诊断、复盘调整，以及用户明确要求时的项目学习留痕。
+
+示例：
+
+```text
+请使用 learning-coach，根据我每周 6 小时的时间，制定一个 8 周的线性代数学习计划。
+```
+
+```text
+继续上次的机器学习数学学习，先读取 learning/INDEX.md 和对应 track，给我安排今天的课程和测验，结束后记录本次进度。
+```
+
+学习档案采用多主题结构：
+
+```text
+learning/
+├── INDEX.md
+└── tracks/
+    └── YYYY-MM-DD-topic-slug/
+        ├── PROGRESS.md
+        ├── plan.md
+        ├── sessions/
+        └── artifacts/
+```
+
+### `generate-design-md`
+
+适合从本地前端项目、公开网站 URL、页面截图或混合来源中提取设计 token、组件规则与设计推理，并生成：
+
+- `DESIGN.md`
+- `preview.html`
+- `preview-dark.html`
+
+示例：
+
+```text
+请使用 generate-design-md，分析当前前端项目的组件、CSS 和设计 token，在项目根目录生成 DESIGN.md、preview.html 和 preview-dark.html。
+```
+
+```text
+请根据这个公开网站 URL 和我提供的移动端截图整理一套非官方设计系统，明确哪些值来自证据、哪些是推断，并生成明暗预览。
+```
+
+该 skill 会运行自带的 Python 审计脚本检查 token 引用、占位符、预览结构和文档一致性。分析网站或截图时，客户端仍需具备相应的浏览器、截图或联网能力。
+
+## 更新与卸载
+
+```bash
+# 更新当前项目 Codex 中的一个 skill
+pnpm dlx @coco-box/one-skills@latest update learning-coach --agent codex
+
+# 更新当前项目三个客户端中的全部 skill
+pnpm dlx @coco-box/one-skills@latest update --agent all
+
+# 更新用户级安装
+pnpm dlx @coco-box/one-skills@latest update --agent codex,cursor,claude --global
+
+# 卸载指定 skill
+pnpm dlx @coco-box/one-skills@latest uninstall generate-design-md --agent cursor
+```
 
 ## CLI
 
@@ -58,81 +143,23 @@ skills/                    # 唯一事实来源：每个子目录是一个独立
     SKILL.md
     references/
     scripts/
+  generate-design-md/
+    SKILL.md
+    agents/
+    assets/
+    references/
+    scripts/
 bin/one-skills.js          # 无运行时依赖的跨平台 CLI
 skills.json                # 对外 skill 清单
 scripts/validate-skills.js # 静态校验
 test/                      # CLI 集成测试
-.github/workflows/         # CI 与 npm 发布
+.github/workflows/         # 持续集成检查
 ```
-
-## 维护一个 skill
-
-1. 在 `skills/<name>/` 新建或修改 `SKILL.md`；目录名必须与 frontmatter 的 `name` 一致。
-2. 大段参考资料放进 `references/`，确定性或重复性操作放进 `scripts/`，模板等输出资源放进 `assets/`。
-3. 在 `skills.json` 登记新 skill。
-4. 执行：
-
-   ```bash
-   pnpm check
-   pnpm test
-   pnpm pack
-   ```
-
-5. 运行 `pnpm release`，在交互界面中选择检查、版本更新、CHANGELOG、npm 发布和 Git 发布步骤。
-
-skill 应保持单一、可辨认的能力边界。只有当两个能力经常共同触发、共享状态并构成同一闭环时才合并；若能独立安装、独立复用或拥有不同安全边界，则维持拆分。
-
-## npm 首次发布
-
-1. 确认 npm 组织 `@coco-box` 已创建，并且发布账号具有该组织的包发布权限。
-2. 执行 `npm login --registry https://registry.npmjs.org/` 完成 npm 登录。
-3. 确保工作区干净且位于 `main` 分支，然后执行 `pnpm release`。
-
-交互脚本默认执行检查、选择版本、生成更新日志、发布 npm、提交并推送标签，以及通过 `gh` 创建 GitHub Release。GitHub 仅用于源码和版本记录，skill 的安装与更新始终通过 npm。
-
-### 交互式发布
-
-```bash
-pnpm release
-```
-
-发布脚本会：
-
-1. 让你多选本次执行的步骤；
-2. 检查干净工作区、`main` 分支、Git remote、npm 登录状态、测试和打包；
-3. 交互选择 `patch`、`minor`、`major` 或自定义 SemVer；
-4. 根据上一个 Git 标签以来的提交生成 `CHANGELOG.md`；
-5. 二次确认后向 `https://registry.npmjs.org/` 发布 `@coco-box/one-skills`；
-6. 提交版本文件、创建 `vX.Y.Z` 标签、推送，并尝试创建 GitHub Release。
-
-配置位于 `scripts/release.config.cjs`。可以通过 `ONE_SKILLS_NPM_REGISTRY`、`ONE_SKILLS_NPM_TAG` 和 `ONE_SKILLS_RELEASE_BRANCH` 临时覆盖配置，仓库中不保存 npm Token。
-
-如果不希望每次发布都打开 npm 网页确认，请在 npm 网站创建仅授权 `@coco-box/one-skills`、具备读写权限并开启 **Bypass 2FA** 的 Granular Access Token。复制示例配置并填入 Token：
-
-```bash
-cp .env.example .env
-# 编辑 .env，将 NPM_TOKEN 改成真实 Token
-pnpm release
-```
-
-项目根目录的 `.env` 已被 `.gitignore` 忽略。脚本会在读取发布配置前加载它，并只通过临时 npm 配置把 Token 传给检查与发布子进程，结束后立即删除临时文件。不要把真实 Token 写进 `.env.example`、`.npmrc`、`release.config.cjs` 或提交到 Git。若 `.env` 中未设置 `NPM_TOKEN`，npm 会继续使用官方网页认证流程。
-
-### GitHub 认证与 CI
-
-GitHub Actions 中的 `CI` 只执行安装、校验、测试和打包，不负责发布 npm。推送到 `main` 或创建 Pull Request 会自动触发 CI，GitHub 会为 Actions 自动提供所需权限，不需要在 `.env` 中配置 GitHub Token。
-
-交互发布流程最后的 GitHub Release 只是 Git 标签的可视化版本页面，不影响 npm 包的安装和更新。推荐在本机安装 GitHub CLI 后登录：
-
-```bash
-brew install gh
-gh auth login
-```
-
-`gh` 会把凭据保存在系统安全凭据存储中，不需要写入项目 `.env`。如果本机没有安装或登录 `gh`，脚本会保留已经推送的 Git 标签并提示你稍后在 GitHub 网页手动创建 Release，不会因此撤销已发布的 npm 包。
 
 ## 当前 skills
 
 - `learning-coach`：整合学习计划、辅导、练习与解析、错题诊断、动态复盘，以及用户明确要求时的项目留痕。
+- `generate-design-md`：从本地前端项目、在线网站或截图中提取可复用的视觉语言，生成 `DESIGN.md`、`preview.html` 与 `preview-dark.html`，并执行一致性审计。
 
 ## 兼容性说明
 

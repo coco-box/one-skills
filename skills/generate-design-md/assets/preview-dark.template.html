@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN" data-preview-mode="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><SYSTEM_NAME> 暗色设计系统预览</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --canvas: <DARK_CANVAS_OR_CANVAS>;
+      --surface: <DARK_SURFACE_OR_SURFACE>;
+      --ink: <DARK_INK_OR_INK>;
+      --ink-muted: <DARK_INK_MUTED_OR_INK_MUTED>;
+      --hairline: <DARK_HAIRLINE_OR_HAIRLINE>;
+      --primary: <PRIMARY>;
+      --on-primary: <ON_PRIMARY>;
+      --radius-sm: <RADIUS_SM>;
+      --radius-md: <RADIUS_MD>;
+      --radius-lg: <RADIUS_LG>;
+      --space-1: <SPACE_XS>;
+      --space-2: <SPACE_SM>;
+      --space-3: <SPACE_MD>;
+      --space-4: <SPACE_LG>;
+      --space-5: <SPACE_XL>;
+      --font-display: <DISPLAY_FONT_STACK>;
+      --font-body: <BODY_FONT_STACK>;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var(--font-body); }
+    button, input, textarea { font: inherit; }
+    :focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+    .shell { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+    .masthead { padding: 48px 0 32px; border-bottom: 1px solid var(--hairline); }
+    .masthead h1 { margin: 0 0 12px; font-family: var(--font-display); font-size: clamp(32px, 6vw, 64px); line-height: 1.05; }
+    .masthead p { max-width: 720px; margin: 0; color: var(--ink-muted); line-height: 1.6; }
+    .section { padding: 40px 0; border-bottom: 1px solid var(--hairline); }
+    .section h2 { margin: 0 0 20px; font-family: var(--font-display); font-size: 28px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 16px; }
+    .specimen { min-width: 0; padding: 20px; background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--radius-lg); }
+    .meta { color: var(--ink-muted); font-size: 13px; overflow-wrap: anywhere; }
+    .swatch { min-height: 96px; border: 1px solid var(--hairline); border-radius: var(--radius-md); }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .button { min-height: 44px; padding: 0 18px; border-radius: var(--radius-md); border: 1px solid transparent; cursor: pointer; }
+    .button-primary { color: var(--on-primary); background: var(--primary); }
+    .button-secondary { color: var(--ink); background: var(--surface); border-color: var(--hairline); }
+    .field { display: grid; gap: 8px; }
+    .field input { width: 100%; min-height: 44px; padding: 10px 12px; color: var(--ink); background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--radius-md); }
+    .spacing-sample { display: flex; align-items: end; gap: 12px; flex-wrap: wrap; }
+    .spacing-block { min-width: 12px; background: var(--primary); border-radius: var(--radius-sm); }
+    .footer { padding: 24px 0 40px; color: var(--ink-muted); font-size: 13px; }
+    @media (max-width: 640px) { .shell { width: min(100% - 24px, 1120px); } .masthead { padding-top: 32px; } .section { padding: 32px 0; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="shell">
+      <p class="meta">DESIGN SYSTEM / DARK PREVIEW</p>
+      <h1><SYSTEM_NAME></h1>
+      <p><DARK_SCOPE_AND_SIGNATURE_RELATIONSHIPS></p>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="section" id="colors"><h2>暗色颜色</h2><div class="grid"><COLOR_SPECIMENS></div></section>
+    <section class="section" id="typography"><h2>字体层级</h2><div><TYPOGRAPHY_SPECIMENS></div></section>
+    <section class="section" id="components">
+      <h2>组件与状态</h2>
+      <div class="grid">
+        <article class="specimen"><h3>按钮</h3><div class="actions"><button class="button button-primary">主要操作</button><button class="button button-secondary">次要操作</button></div></article>
+        <article class="specimen"><h3>输入框</h3><label class="field"><span class="meta">字段标签</span><input placeholder="输入示例"></label></article>
+        <SIGNATURE_COMPONENT_SPECIMENS>
+      </div>
+    </section>
+    <section class="section" id="foundations"><h2>间距、形状与层级</h2><div class="grid"><FOUNDATION_SPECIMENS></div></section>
+  </main>
+
+  <footer class="footer"><div class="shell">此暗色页面用于验证 DESIGN.md，不代表来源品牌的官方网站。<DARK_INFERENCE_DISCLOSURE></div></footer>
+</body>
+</html>

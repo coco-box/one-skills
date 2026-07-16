@@ -1,0 +1,4 @@
+interface:
+  display_name: "生成设计规范与明暗预览"
+  short_description: "从代码、网页或截图提炼 DESIGN.md 与明暗预览"
+  default_prompt: "使用 $generate-design-md 分析我提供的来源，并生成相互一致的 DESIGN.md、preview.html 与 preview-dark.html。"
