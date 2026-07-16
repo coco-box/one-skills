@@ -1,5 +1,10 @@
 # 更新日志
 
+## 0.1.3 - 2026-07-16
+
+- feat: 添加生成 design.md 的 skill 和更新 readme.md (21b0cdd)
+- feat: 更新 workflows (277e3ab)
+
 ## 0.1.2 - 2026-07-11
 
 - feat: 更新 skill (11d8b4b)
